@@ -42,6 +42,36 @@ func TestDotEnvEmbed(t *testing.T) {
 	}
 }
 
+func TestPrefixDotEnvEmbed(t *testing.T) {
+	var cfg struct {
+		Foo string
+		Bar string
+	}
+	loader := aconfig.LoaderFor(&cfg, aconfig.Config{
+		SkipDefaults:       true,
+		SkipEnv:            true,
+		SkipFlags:          true,
+		FailOnFileNotFound: true,
+		EnvPrefix:          "APP",
+		FileDecoders: map[string]aconfig.FileDecoder{
+			".env": aconfigdotenv.New(),
+		},
+		Files:      []string{"testdata/config_prefix.env"},
+		FileSystem: configEmbed,
+	})
+
+	if err := loader.Load(); err != nil {
+		t.Fatal(err)
+	}
+
+	if cfg.Foo != "value1" {
+		t.Fatalf("have: %v", cfg.Foo)
+	}
+	if cfg.Bar != "value2" {
+		t.Fatalf("have: %v", cfg.Bar)
+	}
+}
+
 func TestDotEnv(t *testing.T) {
 	filepath := createTestFile(t)
 
